@@ -522,11 +522,11 @@ int run_daemon() {
 
     memset(&sun, 0, sizeof(sun));
     sun.sun_family = AF_LOCAL;
-    strcpy(sun.sun_path, REQUESTOR_DAEMON_PATH);
+    memcpy(sun.sun_path, "\0" REQUESTOR_DAEMON_PATH, strlen(REQUESTOR_DAEMON_PATH) + 1);
 
     unlink(sun.sun_path);
 
-    if (bind(fd, (struct sockaddr*)&sun, sizeof(sun)) < 0) {
+    if (bind(fd, (struct sockaddr*)&sun, strlen(REQUESTOR_DAEMON_PATH) + offsetof(struct sockaddr_un, sun_path)  + 1) < 0) {
         PLOGE("daemon bind");
         goto err;
     }
@@ -631,9 +631,9 @@ int connect_daemon(int argc, char *argv[], int ppid) {
 
     memset(&sun, 0, sizeof(sun));
     sun.sun_family = AF_LOCAL;
-    strcpy(sun.sun_path, REQUESTOR_DAEMON_PATH);
+    memcpy(sun.sun_path, "\0" REQUESTOR_DAEMON_PATH, strlen(REQUESTOR_DAEMON_PATH) + 1);
 
-    if (0 != connect(socketfd, (struct sockaddr*)&sun, sizeof(sun))) {
+    if (0 != connect(socketfd, (struct sockaddr*)&sun, strlen(REQUESTOR_DAEMON_PATH) + offsetof(struct sockaddr_un, sun_path)  + 1)) {
         PLOGE("connect");
         exit(-1);
     }
